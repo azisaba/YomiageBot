@@ -1,0 +1,2 @@
+# YomiageBot
+DiscordのメッセージをVoiceChannelで読み上げてくれるBot
