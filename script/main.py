@@ -17,7 +17,7 @@ token = sys.argv[1]
 print("token: {0}".format(token))
 
 # init status
-status = status.Status(joined=False,channel_id="",voice_channel_id="")
+status = status.Status(joined=False,channel_id="",voice_channel_id="",playing=False)
 
 # Instantiates a client
 client = texttospeech.TextToSpeechClient()
@@ -30,8 +30,9 @@ def generate(message,file_name):
     synthesis_input = texttospeech.SynthesisInput(text=message)
     # Build the voice request, select the language code ("en-US") and the ssml
     # voice gender ("neutral")
+    # jp = ja-JP en= en-US
     voice = texttospeech.VoiceSelectionParams(
-        language_code="ja-JP", ssml_gender=texttospeech.SsmlVoiceGender.FEMALE
+        language_code="en-US", ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
     )
     # Select the type of audio file you want returned
     audio_config = texttospeech.AudioConfig(
@@ -100,6 +101,7 @@ async def on_message(message):
                 return
             vc = message.guild.voice_client
             status.joined = False
+            status.playing = False
             await vc.disconnect()
             await text_channel.send('切断しました')
         return
@@ -115,11 +117,7 @@ async def on_message(message):
         # generate
         generate(message.content, 'voice.mp3')
         # player
-        player = vc.play(discord.FFmpegPCMAudio("voice.mp3"))
-        #while not player.is_done():
-        #    await asyncio.sleep(1)
-        # disconnect after the player has finished
-        #player.stop()
+        vc.play(discord.FFmpegPCMAudio("voice.mp3"))
 
 # run
 bot.run(token)

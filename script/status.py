@@ -13,3 +13,4 @@ class Status:
     joined: bool
     channel_id: str
     voice_channel_id: str
+    playing: bool
