@@ -11,14 +11,17 @@ from google.cloud import texttospeech
 import discord
 import copy
 import asyncio
+import status
 
 token = sys.argv[1]
 print("token: {0}".format(token))
 
+# init status
+status = status.Status(joined=False,channel_id="",voice_channel_id="")
+
 # Instantiates a client
 client = texttospeech.TextToSpeechClient()
 # discord
-_joined = False
 bot = discord.Client()
 
 # generate voice
@@ -61,45 +64,62 @@ async def on_message(message):
             return
         if args[0] == "con":
             # had joined
-            if _joined == True:
+            if status.joined == True:
                 await message.channel.send(':boom:エラー: すでに参加しています')
                 return
             # connect
             user = message.author
-            voice_channel = user.voice.voice_channel
+            # voice channel that user connected
+            voice_channel = user.voice.channel
+            # text channel happen event
             text_channel = message.channel
-            _joined = False
+
             # only play music if user is in a voice channel
             if voice_channel != None:
                 await message.channel.send('読み上げを開始します '+ text_channel.name)
-                _message_channel = text_channel
-                _vc = await client.join_voice_channel(voice_channel)
-                _joined = True
+                # insert
+                status.channel_id = text_channel.id
+                status.voice_channel_id = voice_channel.id
+                # connect
+                await voice_channel.connect()
+                status.joined = True
             return
         elif args[0] == "dc":
             # had joined
-            if _joined == False:
+            if status.joined == False:
                 await message.channel.send(':boom:エラー: 接続されていません')
+                return
+            if not message.channel.id == status.channel_id:
                 return
             user = message.author
             text_channel = message.channel
-            await _vc.disconnect()
+            # get voice channel
+            voice_channel = user.voice.channel
+            if not voice_channel.id == status.voice_channel_id:
+                await message.channel.send(':boom:エラー: VoiceChannelに接続してください')
+                return
+            vc = message.guild.voice_client
+            status.joined = False
+            await vc.disconnect()
             await text_channel.send('切断しました')
         return
     # channel
-    if message.channel == _message_channel:
+    if message.channel.id == status.channel_id:
         # has joined
-        if not  _joined == True:
+        if status.joined == False:
             return
+        # get voice channel
+        voice_channel = bot.get_channel(status.voice_channel_id)
+        # get voice client
+        vc = message.guild.voice_client
         # generate
         generate(message.content, 'voice.mp3')
         # player
-        player = vc.create_ffmpeg_player('voice.mp3', after=lambda: print('done'))
-        player.start()
-        while not player.is_done():
-            await asyncio.sleep(1)
+        player = vc.play(discord.FFmpegPCMAudio("voice.mp3"))
+        #while not player.is_done():
+        #    await asyncio.sleep(1)
         # disconnect after the player has finished
-        player.stop()
+        #player.stop()
 
 # run
 bot.run(token)
