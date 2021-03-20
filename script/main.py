@@ -12,13 +12,16 @@ import discord
 import copy
 import asyncio
 import status
+import time
+import threading
 
 token = sys.argv[1]
 print("token: {0}".format(token))
 
 # init status
 status = status.Status(joined=False,channel_id="",voice_channel_id="",playing=False)
-
+# message queue
+message_queue = list()
 # Instantiates a client
 client = texttospeech.TextToSpeechClient()
 # discord
@@ -32,7 +35,7 @@ def generate(message,file_name):
     # voice gender ("neutral")
     # jp = ja-JP en= en-US
     voice = texttospeech.VoiceSelectionParams(
-        language_code="en-US", ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
+        language_code="ja-JP", ssml_gender=texttospeech.SsmlVoiceGender.FEMALE
     )
     # Select the type of audio file you want returned
     audio_config = texttospeech.AudioConfig(
@@ -110,14 +113,37 @@ async def on_message(message):
         # has joined
         if status.joined == False:
             return
-        # get voice channel
-        voice_channel = bot.get_channel(status.voice_channel_id)
-        # get voice client
-        vc = message.guild.voice_client
-        # generate
-        generate(message.content, 'voice.mp3')
-        # player
-        vc.play(discord.FFmpegPCMAudio("voice.mp3"))
+        message_queue.append(message.content)
 
+# queue
+def message_queue_task():
+    global message_queue
+    global bot
+    global status
+    while True:
+        # has joined
+        if status.joined == False:
+            continue
+
+        for message in message_queue[:]:
+            while status.playing:
+                time.sleep(1)
+            # get voice channel
+            voice_channel = bot.get_channel(status.voice_channel_id)
+            # get voice client
+            vc = voice_channel.guild.voice_client
+            # generate
+            generate(message, 'voice.mp3')
+            # player
+            vc.play(discord.FFmpegPCMAudio("voice.mp3"))
+            status.playing = True
+            while vc.is_playing():
+                time.sleep(1)
+            status.playing = False
+            message_queue.remove(message)
+        time.sleep(1)
+
+thread = threading.Thread(target=message_queue_task)
+thread.start()
 # run
 bot.run(token)
