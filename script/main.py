@@ -14,6 +14,7 @@ import asyncio
 import status
 import time
 import threading
+import re
 
 token = sys.argv[1]
 print("token: {0}".format(token))
@@ -51,6 +52,10 @@ def generate(message,file_name):
         # Write the response to the output file.
         out.write(response.audio_content)
         print('Audio content written to file "{0}"'.format(file_name))
+
+# remove url from str
+def remove_url(msg):
+    return re.sub(r'^https?:\/\/.*[\r\n]*', '', msg, flags=re.MULTILINE)
 
 @bot.event
 async def on_message(message):
@@ -113,7 +118,13 @@ async def on_message(message):
         # has joined
         if status.joined == False:
             return
-        message_queue.append(message.content)
+        
+        msg = message.clean_content
+        msg = remove_url(msg)
+        # len check
+        if len(msg) <= 0:
+            return
+        message_queue.append(msg)
 
 # queue
 def message_queue_task():
@@ -132,6 +143,8 @@ def message_queue_task():
             voice_channel = bot.get_channel(status.voice_channel_id)
             # get voice client
             vc = voice_channel.guild.voice_client
+            # logger
+            print("message: {0}".format(message))
             # generate
             generate(message, 'voice.mp3')
             # player
