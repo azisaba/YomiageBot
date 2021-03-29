@@ -15,43 +15,21 @@ import status
 import time
 import threading
 import re
+import voicegenerator
+import message as message_data
 
 token = sys.argv[1]
 print("token: {0}".format(token))
 
-# init status
-status = status.Status(joined=False,channel_id="",voice_channel_id="",playing=False)
-# message queue
+# init status dict <id(str), status(Status.py)>
+status_list = dict()
+# message queue <message.py>
 message_queue = list()
+
 # Instantiates a client
 client = texttospeech.TextToSpeechClient()
 # discord
 bot = discord.Client()
-
-# generate voice
-def generate(message,file_name):
-    # Set the text input to be synthesized
-    synthesis_input = texttospeech.SynthesisInput(text=message)
-    # Build the voice request, select the language code ("en-US") and the ssml
-    # voice gender ("neutral")
-    # jp = ja-JP en= en-US
-    voice = texttospeech.VoiceSelectionParams(
-        language_code="ja-JP", ssml_gender=texttospeech.SsmlVoiceGender.FEMALE
-    )
-    # Select the type of audio file you want returned
-    audio_config = texttospeech.AudioConfig(
-        audio_encoding=texttospeech.AudioEncoding.MP3
-    )
-    # Perform the text-to-speech request on the text input with the selected
-    # voice parameters and audio file type
-    response = client.synthesize_speech(
-        input=synthesis_input, voice=voice, audio_config=audio_config
-    )
-    # The response's audio_content is binary.
-    with open(file_name, "wb") as out:
-        # Write the response to the output file.
-        out.write(response.audio_content)
-        print('Audio content written to file "{0}"'.format(file_name))
 
 # remove url from str
 def remove_url(msg):
@@ -59,6 +37,14 @@ def remove_url(msg):
 
 @bot.event
 async def on_message(message):
+    # Status check
+    guild = message.guild
+    guild_status = status.Status(joined=False,guild_id=guild.id,channel_id="",voice_channel_id="",playing=False)
+    if guild.id in status_list:
+        guild_status = status_list[guild.id]
+    else:
+        status_list[guild.id] = guild_status
+
     # bot
     if message.author.bot:
         return
@@ -73,7 +59,7 @@ async def on_message(message):
             return
         if args[0] == "con":
             # had joined
-            if status.joined == True:
+            if guild_status.joined == True:
                 await message.channel.send(':boom:エラー: すでに参加しています')
                 return
             # connect
@@ -87,36 +73,36 @@ async def on_message(message):
             if voice_channel != None:
                 await message.channel.send('読み上げを開始します '+ text_channel.name)
                 # insert
-                status.channel_id = text_channel.id
-                status.voice_channel_id = voice_channel.id
+                guild_status.channel_id = text_channel.id
+                guild_status.voice_channel_id = voice_channel.id
                 # connect
                 await voice_channel.connect()
-                status.joined = True
+                guild_status.joined = True
             return
         elif args[0] == "dc":
             # had joined
-            if status.joined == False:
+            if guild_status.joined == False:
                 await message.channel.send(':boom:エラー: 接続されていません')
                 return
-            if not message.channel.id == status.channel_id:
+            if not message.channel.id == guild_status.channel_id:
                 return
             user = message.author
             text_channel = message.channel
             # get voice channel
             voice_channel = user.voice.channel
-            if not voice_channel.id == status.voice_channel_id:
+            if not voice_channel.id == guild_status.voice_channel_id:
                 await message.channel.send(':boom:エラー: VoiceChannelに接続してください')
                 return
             vc = message.guild.voice_client
-            status.joined = False
-            status.playing = False
+            guild_status.joined = False
+            guild_status.playing = False
             await vc.disconnect()
             await text_channel.send('切断しました')
         return
     # channel
-    if message.channel.id == status.channel_id:
+    if message.channel.id == guild_status.channel_id:
         # has joined
-        if status.joined == False:
+        if guild_status.joined == False:
             return
         
         msg = message.clean_content
@@ -124,35 +110,35 @@ async def on_message(message):
         # len check
         if len(msg) <= 0:
             return
-        message_queue.append(msg)
+        msg_data = message_data.Message(message=msg, guild_id=guild_status.guild_id)
+        message_queue.append(msg_data)
 
 # queue
 def message_queue_task():
     global message_queue
     global bot
     global status
-    while True:
-        # has joined
-        if status.joined == False:
-            continue
+    global client
 
+    while True:
         for message in message_queue[:]:
-            while status.playing:
+            # status
+            guild_status = status_list[message.guild_id]
+            while guild_status.playing:
                 time.sleep(1)
-            # get voice channel
-            voice_channel = bot.get_channel(status.voice_channel_id)
             # get voice client
-            vc = voice_channel.guild.voice_client
+            vc = bot.get_guild(message.guild_id).voice_client
             # logger
-            print("message: {0}".format(message))
+            print("message: {0}".format(message.message))
             # generate
-            generate(message, 'voice.mp3')
+            voicegenerator.generate(client,message.message, 'voice.mp3')
             # player
             vc.play(discord.FFmpegPCMAudio("voice.mp3"))
-            status.playing = True
+            # play
+            guild_status.playing = True
             while vc.is_playing():
                 time.sleep(1)
-            status.playing = False
+            guild_status.playing = False
             message_queue.remove(message)
         time.sleep(1)
 
