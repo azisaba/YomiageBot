@@ -2,16 +2,13 @@
 ########################
 #   Project: Yomiage
 #   Author: testusuke
-#   Class: Status
-#   Date: 2021/3/19
+#   Class: message
+#   Date: 2021/3/29
 ########################
 
 import dataclasses
 
 @dataclasses.dataclass
-class Status:
-    joined: bool
-    guild_id:str
-    channel_id: str
-    voice_channel_id: str
-    playing: bool
+class Message:
+    message: str
+    guild_id: str
