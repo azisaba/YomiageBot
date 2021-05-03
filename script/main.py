@@ -124,6 +124,10 @@ def message_queue_task():
         for message in message_queue[:]:
             # status
             guild_status = status_list[message.guild_id]
+            # status check
+            if guild_status.joined == False:
+                message_queue.remove(message)
+                return
             while guild_status.playing:
                 time.sleep(1)
             # get voice client
