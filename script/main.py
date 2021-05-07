@@ -142,7 +142,7 @@ def message_queue_task():
                 vc.play(discord.FFmpegPCMAudio("voice.mp3"))
                 # play
                 guild_status.playing = True
-                while vc.is_playing():
+                while vc.is_playing() and vc.is_connected():
                     time.sleep(1)
                 guild_status.playing = False
             message_queue.remove(message)
