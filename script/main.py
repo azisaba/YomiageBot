@@ -144,6 +144,7 @@ def message_queue_task():
                 guild_status.playing = True
                 while vc.is_playing() and vc.is_connected():
                     time.sleep(1)
+                vc.stop()
                 guild_status.playing = False
             message_queue.remove(message)
         time.sleep(1)
