@@ -137,7 +137,7 @@ def message_queue_task():
             # generate
             voicegenerator.generate(client,message.message, 'voice.mp3')
             
-            if vc.is_connected == True:
+            if vc.is_connected() == True:
                 # player
                 vc.play(discord.FFmpegPCMAudio("voice.mp3"))
                 # play
