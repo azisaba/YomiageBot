@@ -136,13 +136,15 @@ def message_queue_task():
             print("message: {0}".format(message.message))
             # generate
             voicegenerator.generate(client,message.message, 'voice.mp3')
-            # player
-            vc.play(discord.FFmpegPCMAudio("voice.mp3"))
-            # play
-            guild_status.playing = True
-            while vc.is_playing():
-                time.sleep(1)
-            guild_status.playing = False
+            
+            if vc.is_connected == True:
+                # player
+                vc.play(discord.FFmpegPCMAudio("voice.mp3"))
+                # play
+                guild_status.playing = True
+                while vc.is_playing():
+                    time.sleep(1)
+                guild_status.playing = False
             message_queue.remove(message)
         time.sleep(1)
 
