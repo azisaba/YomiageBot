@@ -98,6 +98,15 @@ async def on_message(message):
             guild_status.playing = False
             await vc.disconnect()
             await text_channel.send('切断しました')
+            return
+        elif args[0] == "ch":
+            # had joined
+            if guild_status.joined == False:
+                await message.channel.send('VCに参加していません')
+                return
+            channel_name = guild.get_channel(guild_status.channel_id).name
+            await message.channel.send('{0} に参加しています'.format(channel_name))
+
         return
     # channel
     if message.channel.id == guild_status.channel_id:
@@ -136,6 +145,7 @@ def message_queue_task():
             print("message: {0}".format(message.message))
             # generate
             voicegenerator.generate(client,message.message, 'voice.mp3')
+            message_queue.remove(message)
             
             try:
                 # player
@@ -145,11 +155,8 @@ def message_queue_task():
                 while vc.is_playing():
                     time.sleep(1)
                 guild_status.playing = False
-            except ClientException as ce:
-                vc.stop()
-                guild_status.playing = False
-
-            message_queue.remove(message)
+            except:
+                pass
         time.sleep(1)
 
 thread = threading.Thread(target=message_queue_task)
