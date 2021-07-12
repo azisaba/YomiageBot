@@ -10,7 +10,6 @@ import sys
 from google.cloud import texttospeech
 import discord
 import copy
-import asyncio
 import status
 import time
 import threading
