@@ -19,7 +19,6 @@ class MessageManager:
         Add message to collection.
         :param message:
         """
-        # TODO Statusを参照しどのインスタンスに投げればいいか判断して、インスタンス内のQueueに追加する
         status = self.bm.get_status(channel_id=message.channel_id)
         if status is None:
             return

@@ -91,8 +91,16 @@ class ListenerBot:
 
             elif args[0] == "status":
                 """Command for showing status"""
-                # TODO 接続状況(どれがどのチャンネルに繋がっているか),利用可能かどうか
+                # TODO feature: 接続状況(どれがどのチャンネルに繋がっているか),利用可能かどうか
                 # USE EMBED
+                pass
+
+            elif args[0] == "setting":
+                # TODO feature: 声の種類,速度,ピッチを変更可能にする
+                pass
+
+            elif args[0] == "help":
+                # TODO feature: Help message
                 pass
             return
 

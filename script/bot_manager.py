@@ -40,7 +40,6 @@ class BotManager:
         self._status_list = list()
 
     def connect_request(self, guild_id, channel_id, vc_channel_id):
-        # TODO 接続可能なBOTを探す,接続,登録,読み上げ開始 -> DONE
         loop = asyncio.get_event_loop()
         _lb_channel = self._lb.client.get_channel(channel_id)
         # check existing available bot
@@ -69,7 +68,6 @@ class BotManager:
         loop.create_task(_lb_channel.send('{0}が読み上げを開始します {1}'.format(_sbc.user.name, _lb_channel.name)))
 
     def disconnect_request(self, guild_id, channel_id, vc_channel_id):
-        # TODO Audioの停止, voice_clientの削除, disconnect, 削除 -> DONE
         # vc.stop() vc<-remove disconnect
         loop = asyncio.get_event_loop()
         _lb_channel = self._lb.client.get_channel(channel_id)
