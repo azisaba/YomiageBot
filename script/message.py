@@ -8,6 +8,7 @@
 
 import dataclasses
 
+
 @dataclasses.dataclass
 class Message:
     message: str

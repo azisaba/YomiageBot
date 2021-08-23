@@ -7,8 +7,9 @@
 ########################
 from google.cloud import texttospeech
 
+
 # generate voice
-def generate(client,message,file_name):
+def generate(client, message, file_name):
     # Set the text input to be synthesized
     synthesis_input = texttospeech.SynthesisInput(text=message)
     # Build the voice request, select the language code ("en-US") and the ssml
