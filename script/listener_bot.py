@@ -15,7 +15,7 @@ from message import Message
 
 class ListenerBot:
 
-    def __init__(self, token, mm, bm, loop):
+    def __init__(self, token, mm, bm, loop, working_path):
         """
         ListenerBot(token, mm, bm)
 
@@ -25,13 +25,14 @@ class ListenerBot:
         - mm: MessageManager(message_manager.py)
         - bm: BotManager(bot_manager.py)
         - loop: event loop
-        :param token, mm, bm, loop:
+        - working_path: working path
+        :param token, mm, bm, loop, working_path:
         """
         self.info("Launching bot...")
         # init
         self.client = discord.Client()
-        self.client.on_message = self.on_message # TODO Specify the path to dictionary.yml and pass it as an argument.
-        self.dictionary = RepDict()
+        self.client.on_message = self.on_message
+        self.dictionary = RepDict("{0}/{1}".format(working_path, 'dictionary.yml'))
         self.mm = mm
         self.bm = bm
         # run

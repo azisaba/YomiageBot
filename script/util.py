@@ -14,7 +14,7 @@ import yaml
 def remove_url(message):
     return re.sub(r'^https?:\/\/.*[\r\n]*', '', message, flags=re.MULTILINE)
 
-class RepDict():
+class RepDict:
     def __init__(self, dictionary_path):
         self.dictionary_path = dictionary_path
         with open(self.dictionary_path, 'r') as f:
