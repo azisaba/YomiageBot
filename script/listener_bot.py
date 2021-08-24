@@ -110,17 +110,45 @@ class ListenerBot:
 
             elif args[0] == "status":
                 """Command for showing status"""
-                # TODO feature: 接続状況(どれがどのチャンネルに繋がっているか),利用可能かどうか
-                # USE EMBED
-                pass
+                _csl = self.bm.connectable_speaker_list(guild_id=guild.id)
+                _asl = self.bm.available_speaker_list(guild_id=guild.id)
+                # joined is True, else is False
+                _speaker_condition_dict = dict()
+                for _asb in _asl:
+                    if _asb in _csl:
+                        _speaker_condition_dict[_asb] = False
+                    else:
+                        _speaker_condition_dict[_asb] = True
+                msg = ""
+                for _key in _speaker_condition_dict.keys():
+                    _value = _speaker_condition_dict.get(_key)
+                    if _value:
+                        msg += "{0} -> {1}\n".format(_key.discord_client.user.name, ":hot_face: 使用中")
+                    else:
+                        msg += "{0} -> {1}\n".format(_key.discord_client.user.name, ":white_check_mark: 利用可能")
+                embed = discord.Embed(title='稼働状況', color=discord.Colour.blue())
+                embed.add_field(name='List', value=msg, inline=False)
+                await text_channel.send(embed=embed)
 
             elif args[0] == "setting":
                 # TODO feature: 声の種類,速度,ピッチを変更可能にする
                 pass
 
             elif args[0] == "help":
-                # TODO feature: Help message
-                pass
+                embed = discord.Embed(
+                    title=":question: ヘルプ",
+                    description=
+                    """
+                    Command:
+                     - ^con : 読み上げを開始します
+                     - ^dc : 切断します
+                     - ^status : ステータスを表示します
+                     - ^help : ヘルプを表示します
+                    """,
+                    color=discord.Colour.green()
+                )
+                await text_channel.send(embed=embed)
+
             return
 
         else:

@@ -110,7 +110,6 @@ class BotManager:
 
     def get_status(self, channel_id=None, vc_channel_id=None):
         """
-
         :param channel_id:
         :param vc_channel_id:
         :return: if not find,return None
