@@ -9,7 +9,7 @@
 import discord
 import asyncio
 from copy import copy
-from util import remove_url
+from util import remove_url, RepDict
 from message import Message
 
 
@@ -30,7 +30,8 @@ class ListenerBot:
         self.info("Launching bot...")
         # init
         self.client = discord.Client()
-        self.client.on_message = self.on_message
+        self.client.on_message = self.on_message # TODO Specify the path to dictionary.yml and pass it as an argument.
+        self.dictionary = RepDict()
         self.mm = mm
         self.bm = bm
         # run
@@ -89,6 +90,23 @@ class ListenerBot:
                 self.bm.disconnect_request(guild_id=guild.id, channel_id=text_channel.id,
                                            vc_channel_id=voice_channel.id)
 
+            elif args[0] == "dict":
+                """Commands for manipulating the dictionary system"""
+                try:
+                    if args[1] == "add":
+                        self.dictionary.add(*args[2:])
+                        await text_channel.send('これからは {0} を {1} と読みます！'.format(*args[2:]))
+
+                    elif args[1] == "remove":
+                        result = self.dictionary.remove(args[2])
+                        if result is True:
+                            await text_channel.send('{}を辞書から削除しました'.format(args[2]))
+                        else:
+                            await text_channel.send('{}は辞書に登録されていません！'.format(args[2]))
+
+                except KeyError:
+                    await text_channel.send(':boom:エラー:構文エラーだと思われます。直してください。')
+
             elif args[0] == "status":
                 """Command for showing status"""
                 # TODO feature: 接続状況(どれがどのチャンネルに繋がっているか),利用可能かどうか
@@ -111,6 +129,8 @@ class ListenerBot:
             msg = message.clean_content
             # remove url
             msg = remove_url(message=msg)
+            # replace words based on the dictionary
+            msg = self.dictionary.replace(msg)
 
             # length
             if len(msg) <= 0:
