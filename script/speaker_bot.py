@@ -78,7 +78,7 @@ class SpeakerBot:
                 continue
             except ClientException:
                 # Audio Exception
-                self.info("raise AudioException in speak_thread")
+                self.info("raise ClientException in speak_thread")
                 continue
 
     def shutdown(self):

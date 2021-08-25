@@ -8,6 +8,7 @@
 
 import re
 import yaml
+import os
 
 
 # detect url and remove
@@ -17,8 +18,11 @@ def remove_url(message):
 class RepDict:
     def __init__(self, dictionary_path):
         self.dictionary_path = dictionary_path
-        with open(self.dictionary_path, 'r') as f:
-            self.dictionary = yaml.safe_load(f)
+        if os.path.exists(self.dictionary_path):
+            with open(self.dictionary_path, 'r') as f:
+                self.dictionary = yaml.safe_load(f)
+        else:
+            self.dictionary = None
 
         if self.dictionary is None:
             self.dictionary = dict()

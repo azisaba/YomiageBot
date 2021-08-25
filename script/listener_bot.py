@@ -143,6 +143,7 @@ class ListenerBot:
                      - ^con : 読み上げを開始します
                      - ^dc : 切断します
                      - ^status : ステータスを表示します
+                     - ^dict add/remove <A> <B> : AをBと呼ぶ辞書の追加/削除
                      - ^help : ヘルプを表示します
                     """,
                     color=discord.Colour.green()

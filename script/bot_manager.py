@@ -29,10 +29,21 @@ class BotManager:
         # message manager
         self.mm = MessageManager(bm=self)
         # initialize bot
-        self._lb = ListenerBot(token=config.listener_token, mm=self.mm, bm=self, loop=loop)
+        self._lb = ListenerBot(
+            token=config.listener_token,
+            mm=self.mm,
+            bm=self,
+            loop=loop,
+            working_path="{0}/..".format(working_path)
+        )
         _sb_list = list()
         for _t in config.speaker_token_list:
-            _sb = SpeakerBot(token=_t, bm=self, loop=loop, working_path=working_path)
+            _sb = SpeakerBot(
+                token=_t,
+                bm=self,
+                loop=loop,
+                working_path=working_path
+            )
             _sb_list.append(_sb)
         # BotCollector
         self.bc = BotCollector(self._lb, _sb_list)
